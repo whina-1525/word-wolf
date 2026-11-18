@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+    function isMember(roomId) {
+      return signedIn() && exists(/databases/$(database)/documents/rooms/$(roomId)/players/$(request.auth.uid));
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow write: if false;
+
+      match /friends/{friendId} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+
+      match /share/{docId} {
+        allow read: if isSelf(uid)
+          || (signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)/friends/$(uid)));
+        allow write: if false;
+      }
+    }
+
+    match /friendRequests/{requestId} {
+      allow read: if signedIn() && resource.data.toUid == request.auth.uid;
+      allow read: if signedIn() && resource.data.fromUid == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /passphrases/{hash} {
+      allow read, write: if false;
+    }
+
+    match /rooms/{roomId} {
+      allow read: if isMember(roomId);
+      allow write: if false;
+
+      match /players/{playerId} {
+        allow read: if isMember(roomId);
+        allow write: if false;
+      }
+
+      match /hands/{playerId} {
+        allow read: if isSelf(playerId);
+        allow write: if false;
+      }
+
+      match /secret/{docId} {
+        allow read, write: if false;
+      }
+
+      match /messages/{messageId} {
+        allow read: if isMember(roomId);
+        allow write: if false;
+      }
+
+      match /voteState/{docId} {
+        allow read: if isMember(roomId);
+        allow write: if false;
+      }
+
+      match /joinRequests/{playerId} {
+        allow read: if isMember(roomId);
+        allow write: if false;
+      }
+
+      match /ballotBox/{playerId} {
+        allow read, write: if false;
+      }
+
+      match /pairBank/{pairId} {
+        allow read: if isMember(roomId)
+          && get(/databases/$(database)/documents/rooms/$(roomId)).data.status == 'lobby';
+        allow write: if false;
+      }
+    }
+  }
+}

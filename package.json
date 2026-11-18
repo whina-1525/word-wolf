@@ -1,0 +1,30 @@
+{
+  "name": "word-wolf",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host",
+    "test": "tsx functions/src/logic.test.ts",
+    "icons": "node scripts/make-icons.mjs",
+    "emulators": "firebase emulators:start",
+    "deploy": "npm run build && firebase deploy --only hosting,functions,firestore:rules,firestore:indexes,storage,database"
+  },
+  "dependencies": {
+    "firebase": "^11.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "firebase-tools": "^13.29.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  }
+}
